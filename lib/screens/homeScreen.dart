@@ -1,22 +1,22 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:news_api/models/NewsModel.dart';
 import 'package:http/http.dart' as http;
 
-class homeScreen extends StatefulWidget {
-  const homeScreen({super.key});
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
 
   @override
-  State<homeScreen> createState() => _homeScreenState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _homeScreenState extends State<homeScreen> {
+class _HomeScreenState extends State<HomeScreen> {
+  late Future<NewsModel> newsFuture;
+
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    getNews();
+    newsFuture = getNews();
   }
 
   @override
@@ -27,54 +27,49 @@ class _homeScreenState extends State<homeScreen> {
         centerTitle: true,
       ),
       body: FutureBuilder(
-          future: getNews(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(
-                child: CircularProgressIndicator(),
-              );
-            } else if (snapshot.hasError) {
-              return Center(
-                child: Text(
-                  "An ErrorOccured",
+        future: newsFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text("An Error Occurred"));
+          } else if (!snapshot.hasData || snapshot.data!.articles == null) {
+            return Center(child: Text("Data Not Found!!"));
+          }
+
+          return ListView.builder(
+            itemCount: snapshot.data?.articles?.length ?? 0,
+            itemBuilder: (context, index) {
+              final article = snapshot.data!.articles![index];
+              return ListTile(
+                leading: CircleAvatar(
+                  backgroundImage: article.urlToImage != null
+                      ? NetworkImage(article.urlToImage!)
+                      : AssetImage('assets/placeholder.png') as ImageProvider,
                 ),
+                title: Text(article.title ?? "No Title"),
+                subtitle: Text(article.description ?? "No Description"),
               );
-            } else if (snapshot.data == null) {
-              return Center(
-                child: Text("Data Not Found!!"),
-              );
-            }
-            return ListView.builder(
-              itemBuilder: (context, index) {
-                return ListTile(
-                  leading: CircleAvatar(
-                    backgroundImage: NetworkImage(
-                        snapshot.data!.articles![index].urlToImage.toString()),
-                  ),
-                  title: Text(snapshot.data!.articles![index].title.toString()),
-                  subtitle: Text(
-                      snapshot.data!.articles![index].description.toString()),
-                );
-              },
-              itemCount: snapshot.data!.articles!.length,
-            );
-          }),
+            },
+          );
+        },
+      ),
     );
   }
 
-  // Future Builder
   Future<NewsModel> getNews() async {
     final response = await http.get(Uri.parse(
-        "https://newsapi.org/v2/everything?q=tesla&from=2024-09-24&sortBy=publishedAt&apiKey=7739b0725e63465a9a616aadcafd9569"));
+      "https://newsapi.org/v2/everything?q=india&from=2024-10-22&sortBy=publishedAt&apiKey=7739b0725e63465a9a616aadcafd9569",
+    ));
+
     if (response.statusCode == 200) {
-      Map<String, dynamic> responsedata = jsonDecode(response.body);
-      //String message = responsedata['message'];
-      NewsModel newsModel = NewsModel.fromJson(responsedata);
-      return newsModel;
+      final Map<String, dynamic> responsedata = jsonDecode(response.body);
+      return NewsModel.fromJson(responsedata);
     } else {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(response.body)));
-      return NewsModel();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(response.body)),
+      );
+      return NewsModel(); // Return an empty model to avoid null issues
     }
   }
 }
