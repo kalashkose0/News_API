@@ -59,7 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<NewsModel> getNews() async {
     final response = await http.get(Uri.parse(
-      "https://newsapi.org/v2/everything?q=india&from=2024-10-22&sortBy=publishedAt&apiKey=7739b0725e63465a9a616aadcafd9569",
+      "https://newsapi.org/v2/everything?q=India&from=2024-11-08&sortBy=publishedAt&apiKey=7739b0725e63465a9a616aadcafd9569",
     ));
 
     if (response.statusCode == 200) {
