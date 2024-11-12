@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:news_api/screens/Signin/signinScreen.dart';
 import 'package:news_api/screens/Signup/signupScreen.dart';
 import 'package:news_api/screens/homeScreen.dart';
 
@@ -20,7 +21,8 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       // home: HomeScreen(),
-      home: SignUpScreen(),
+      // home: SignUpScreen(),
+      home: SignInScreen(),
     );
   }
 }
